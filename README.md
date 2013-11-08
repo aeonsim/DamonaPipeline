@@ -1,4 +1,4 @@
 DamonaPipeline
 ==============
 
-Scripts for running the Damona pipeline.
+SLURM bash scripts for running the Damona pipeline.
