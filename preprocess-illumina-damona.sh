@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=2500M 
+#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=6G 
 #SBATCH --mail-type=END --partition=uagfio
-#SBATCH --array=0-1
+##SBATCH --array=0-1
 
 [[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> preprocess-illumina.sh /path/to/bam/folder/"; exit 1; }
 set -e
@@ -56,33 +56,35 @@ $JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF}
 
 ## Run GATK Preprocess Steps
 
-echo "Indel Target Creator"
-IDENAME=`echo ${DENAME} | awk '{gsub("dedup","indelRe",$1); print($1)}'
+##echo "Indel Target Creator"
+##IDENAME=`echo ${DENAME} | awk '{gsub("dedup","indelRe",$1); print($1)}'
 
-$JAVA -Xmx22g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${DENAME} -R ${REF} -o ${IDENAME}.intervals -nt 4
+##echo ${IDENAME}
 
-$JAVA -Xmx22g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${DENAME} -targetIntervals ${IDENAME}.intervals -o ${IDENAME} -known ${INDELS}
+##$JAVA -Xmx22g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${DENAME} -R ${REF} -o ${IDENAME}.intervals -nt 4
+
+##$JAVA -Xmx22g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${DENAME} -targetIntervals ${IDENAME}.intervals -o ${IDENAME} -known ${INDELS}
 
 ## Clean Dedup BAM
 
-if [ -s "${IDENAME}" ]
-then
-  echo "BQSR File exists cleaning up"
-  rm ${DENAME}
-fi
+##if [ -s "${IDENAME}" ]
+##then
+##  echo "BQSR File exists cleaning up"
+##  rm ${DENAME}
+##fi
 
 ## BQSR
 
-$JAVA -Xmx22g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${IDENAME}.table -nct 4
+##$JAVA -Xmx22g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${IDENAME}.table -nct 4
 
-BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'
+##BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'
 
-$JAVA -Xmx22g -jar ${GATK} -T PrintReads -nct 4 -I ${IDENAME} -o ${BQNAME} -BQSR ${IDENAME}.table -R ${REF}
+##$JAVA -Xmx22g -jar ${GATK} -T PrintReads -nct 4 -I ${IDENAME} -o ${BQNAME} -BQSR ${IDENAME}.table -R ${REF}
 
 ## Clean Realigned BAM
 
-if [ -s "${BQNAME}" ]
-then
-  echo "BQSR File exists cleaning up"
-  rm ${IDENAME}
-fi
+##if [ -s "${BQNAME}" ]
+##then
+##  echo "BQSR File exists cleaning up"
+##  rm ${IDENAME}
+##fi

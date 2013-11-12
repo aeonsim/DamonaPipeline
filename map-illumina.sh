@@ -4,7 +4,12 @@
 ###SBATCH --array=0-7
 
 ## Require arugment of Fastq folder to continue
-[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumSamples> map-illumina.sh /path/to/fastq/folder/"; exit 1; }
+[[ $# -gt 0 ]] || {
+echo "sbatch --array=0-<NumSamples> map-illumina.sh /path/to/fastq/folder/";
+echo "This script expects the Foldername to contain the flowcell details &";
+echo "the fastq to be named <SampleID>_<LibraryID/Index_LANE_...fastq.gz> &";
+echo "and that the fastqs are split by R1/R2 and are in the same folder."
+ exit 1; }
 ## Kill script if any commands fail
 set -e
 

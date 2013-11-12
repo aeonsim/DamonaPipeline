@@ -47,7 +47,7 @@ $JAVA -Xmx10g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${DENAME} -targetInter
 
 if [ -s "${IDENAME}" ]
 then
-  echo "BQSR File exists cleaning up"
+  echo "Indel Realignment File exists cleaning up"
   rm ${DENAME}
 fi
 
