@@ -25,7 +25,7 @@ BAMS=(`ls $1*bam`)
 
 echo ${BAMS[@]}
 
-DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); print($1)}'
+DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); print($1)}'`
 
 ##awk '{split($0,arra,"."); gsub("sorted","dedup",arra[1]); print(arra[1])}'`
 
@@ -42,6 +42,7 @@ if [ -s "${BAMS[$SLURM_ARRAY_TASK_ID]}" ]
 then
   echo "Deduped File exists cleaning up"
   rm ${BAMS[$SLURM_ARRAY_TASK_ID]}
+  rm  ${BAMS[$SLURM_ARRAY_TASK_ID]}.bai
 fi
 
 ## Get Stats
