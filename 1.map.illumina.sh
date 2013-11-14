@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=28 --mem-per-cpu=2G 
+#SBATCH --nodes=1 --ntasks-per-node=26 --mem-per-cpu=1G 
 #SBATCH --mail-type=END --partition=uag
 ###SBATCH --array=0-7
 

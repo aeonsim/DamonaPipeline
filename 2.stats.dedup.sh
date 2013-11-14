@@ -18,6 +18,7 @@ GATK=/home/aeonsim/scripts/apps-damona-Oct13/GenomeAnalysisTK-2.7-4-g6f46d11/Gen
 INDELS=/home/aeonsim/refs/GATK-LIC-UG-indels.vcf.gz
 DBSNP=/home/aeonsim/refs/BosTau6_dbSNP138_NCBI.vcf.gz
 KNOWNSNP=/home/aeonsim/refs/GATK-497-UG.vcf.gz
+SAMBAM=/home/aeonsim/scripts/apps-damona-Oct13/sambamba_v0.4.0
 
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
@@ -34,7 +35,10 @@ $HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
 
 ## Skipped PCR Free Libraries
 echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
-$JAVA -Xmx22g -jar ${PICARD}MarkDuplicates.jar M=${BAMS[$SLURM_ARRAY_TASK_ID]}.metrics I=${BAMS[$SLURM_ARRAY_TASK_ID]} O=${DENAME} CREATE_INDEX=true
+##$JAVA -Xmx22g -jar ${PICARD}MarkDuplicates.jar M=${BAMS[$SLURM_ARRAY_TASK_ID]}.metrics I=${BAMS[$SLURM_ARRAY_TASK_ID]} O=${DENAME} CREATE_INDEX=true
+##sambamba multithreaded sam/bam util implements Picard Markduplicates algo but noticeably faster, identical output
+$SAMBAM markdup -t 4 ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
+
 
 ## Cleaning RAW Sorted BAM
 
