@@ -33,12 +33,15 @@ DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); pr
 echo "INDEXING SORTED BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 $HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
 
+mkdir /tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID}
+
 ## Skipped PCR Free Libraries
 echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 ##$JAVA -Xmx22g -jar ${PICARD}MarkDuplicates.jar M=${BAMS[$SLURM_ARRAY_TASK_ID]}.metrics I=${BAMS[$SLURM_ARRAY_TASK_ID]} O=${DENAME} CREATE_INDEX=true
 ##sambamba multithreaded sam/bam util implements Picard Markduplicates algo but noticeably faster, identical output
-$SAMBAM markdup -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
+$SAMBAM markdup --tmpdir=/tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
 
+$HTSCMD bamidx ${DENAME}
 
 ## Cleaning RAW Sorted BAM
 
@@ -47,6 +50,7 @@ then
   echo "Deduped File exists cleaning up"
   rm ${BAMS[$SLURM_ARRAY_TASK_ID]}
   rm  ${BAMS[$SLURM_ARRAY_TASK_ID]}.bai
+  rm -rf /tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID}
 fi
 
 ## Get Stats

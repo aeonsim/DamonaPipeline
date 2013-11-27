@@ -30,34 +30,36 @@ BAMS=(`ls $1*bam`)
 
 echo ${BAMS[@]}
 
-DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); print($1)}'`
+##DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); print($1)}'`
 
 ## Run GATK Preprocess Steps
 
+$HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
+
 echo "Indel Target Creator"
-IDENAME=`echo ${DENAME} | awk '{gsub("dedup","indelRe",$1); print($1)}'`
+IDENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("dedup","indelRe",$1); print($1)}'`
 
 echo ${IDENAME}
 
-$JAVA -Xmx10g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${DENAME} -R ${REF} -o ${IDENAME}.intervals -nt 10
+$JAVA -Xmx10g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -R ${REF} -o ${IDENAME}.intervals -nt $SLURM_JOB_CPUS_PER_NODE
 
-$JAVA -Xmx10g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${DENAME} -targetIntervals ${IDENAME}.intervals -o ${IDENAME} -known ${INDELS}
+$JAVA -Xmx10g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -targetIntervals ${IDENAME}.intervals -o ${IDENAME} -known ${INDELS}
 
 ## Clean Dedup BAM
 
 if [ -s "${IDENAME}" ]
 then
   echo "Indel Realignment File exists cleaning up"
-  rm ${DENAME}
+  rm ${BAMS[$SLURM_ARRAY_TASK_ID]}
 fi
 
 ## BQSR
 
-$JAVA -Xmx10g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${IDENAME}.table -nct 10
+$JAVA -Xmx10g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${IDENAME}.table -nct $SLURM_JOB_CPUS_PER_NODE
 
 BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'`
 
-$JAVA -Xmx10g -jar ${GATK} -T PrintReads -I ${IDENAME} -o ${BQNAME} -BQSR ${IDENAME}.table -R ${REF} -nct 10
+$JAVA -Xmx10g -jar ${GATK} -T PrintReads -I ${IDENAME} -o ${BQNAME} -BQSR ${IDENAME}.table -R ${REF} -nct $SLURM_JOB_CPUS_PER_NODE
 
 ## Clean Realigned BAM
 
