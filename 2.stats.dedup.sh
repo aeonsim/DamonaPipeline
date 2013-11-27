@@ -27,19 +27,22 @@ BAMS=(`ls $1*bam`)
 echo ${BAMS[@]}
 
 DENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("sorted","dedup",$1); print($1)}'`
+##Create Unique TMP dir for sambamba
+TMPDIRNAME="/tmp/sambamba-$(date -d 'today' +'%Y%m%d%H%M')-${SLURM_ARRAY_TASK_ID}"
+
 
 ##awk '{split($0,arra,"."); gsub("sorted","dedup",arra[1]); print(arra[1])}'`
 
 echo "INDEXING SORTED BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 $HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
 
-mkdir /tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID}
+mkdir ${TMPDIRNAME}
 
 ## Skipped PCR Free Libraries
 echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 ##$JAVA -Xmx22g -jar ${PICARD}MarkDuplicates.jar M=${BAMS[$SLURM_ARRAY_TASK_ID]}.metrics I=${BAMS[$SLURM_ARRAY_TASK_ID]} O=${DENAME} CREATE_INDEX=true
 ##sambamba multithreaded sam/bam util implements Picard Markduplicates algo but noticeably faster, identical output
-$SAMBAM markdup --tmpdir=/tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
+$SAMBAM markdup --tmpdir=${TMPDIRNAME} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
 
 $HTSCMD bamidx ${DENAME}
 
@@ -50,7 +53,7 @@ then
   echo "Deduped File exists cleaning up"
   rm ${BAMS[$SLURM_ARRAY_TASK_ID]}
   rm  ${BAMS[$SLURM_ARRAY_TASK_ID]}.bai
-  rm -rf /tmp/tmp-sambam-dedup-${SLURM_ARRAY_TASK_ID}
+  rm -rf ${TMPDIRNAME}
 fi
 
 ## Get Stats
@@ -62,38 +65,3 @@ $BEDTOOLS genomecov -ibam ${DENAME} > ${DENAME}.cov &
 echo "Other Metrics: ${DENAME}"
 
 $JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT=${DENAME}
-
-## Run GATK Preprocess Steps
-
-##echo "Indel Target Creator"
-##IDENAME=`echo ${DENAME} | awk '{gsub("dedup","indelRe",$1); print($1)}'
-
-##echo ${IDENAME}
-
-##$JAVA -Xmx22g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${DENAME} -R ${REF} -o ${IDENAME}.intervals -nt 4
-
-##$JAVA -Xmx22g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${DENAME} -targetIntervals ${IDENAME}.intervals -o ${IDENAME} -known ${INDELS}
-
-## Clean Dedup BAM
-
-##if [ -s "${IDENAME}" ]
-##then
-##  echo "BQSR File exists cleaning up"
-##  rm ${DENAME}
-##fi
-
-## BQSR
-
-##$JAVA -Xmx22g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${IDENAME}.table -nct 4
-
-##BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'
-
-##$JAVA -Xmx22g -jar ${GATK} -T PrintReads -nct 4 -I ${IDENAME} -o ${BQNAME} -BQSR ${IDENAME}.table -R ${REF}
-
-## Clean Realigned BAM
-
-##if [ -s "${BQNAME}" ]
-##then
-##  echo "BQSR File exists cleaning up"
-##  rm ${IDENAME}
-##fi
