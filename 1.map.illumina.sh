@@ -60,7 +60,7 @@ echo "$SAMTOOLS index ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam"
 $SAMTOOLS index ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam
 ## check to see the sorted file is non-zero then remove unsorted
 
-if [ -s "${OUTPUT}${NAME}_${FLOW}_sorted.bam" ]
+if [ -s "${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam" ]
 then
   echo "Sorted File exists cleaning up"
   rm ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam
