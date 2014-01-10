@@ -1,10 +1,9 @@
 #!/bin/bash
 #SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=6G 
-#SBATCH --mail-type=END --partition=uagfio
+#SBATCH --mail-type=FAIL --partition=uagfio
 ##SBATCH --array=0-1
-
-[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> preprocess-illumina.sh /path/to/bam/folder/"; exit 1; }
 set -e
+[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> preprocess-illumina.sh /path/to/bam/folder/"; exit 1; }
 
 
 SAMTOOLS=/home/aeonsim/scripts/apps-damona-Oct13/samtools/samtools
@@ -52,7 +51,9 @@ if [ -s "${BAMS[$SLURM_ARRAY_TASK_ID]}" ]
 then
   echo "Deduped File exists cleaning up"
   rm ${BAMS[$SLURM_ARRAY_TASK_ID]}
-  rm  ${BAMS[$SLURM_ARRAY_TASK_ID]}.bai
+  #DEDUPBAI=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("bam","bai",$1); print($1)}'`
+  #rm  ${DEDUPBAI}
+  rm ${BAMS[$SLURM_ARRAY_TASK_ID]}.bai
   rm -rf ${TMPDIRNAME}
 fi
 
