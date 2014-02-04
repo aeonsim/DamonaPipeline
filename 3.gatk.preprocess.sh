@@ -37,7 +37,7 @@ echo ${BAMS[@]}
 
 ## Run GATK Preprocess Steps
 
-$HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
+##$HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
 
 echo "Indel Target Creator"
 IDENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{gsub("dedup","indelRe",$1); print($1)}'`
@@ -72,16 +72,16 @@ then
   rm ${IDENAME}
 fi
 
-CRAMNAME=`echo ${BQNAME} | awk '{gsub("bam","cram",$1); print($1)}'`
+##CRAMNAME=`echo ${BQNAME} | awk '{gsub("bam","cram",$1); print($1)}'`
 
-echo "Convert to Cram"
-$JAVA -Xmx15g -jar ${CRAM} cram --capture-all-tags -Q -R ${REF} -O ${CRAMNAME} -I ${BQNAME}
-$JAVA -Xmx15g -jar ${CRAM} index -I ${CRAMNAME}
+##echo "Convert to Cram"
+##$JAVA -Xmx15g -jar ${CRAM} cram --capture-all-tags -Q -R ${REF} -O ${CRAMNAME} -I ${BQNAME}
+##$JAVA -Xmx15g -jar ${CRAM} index -I ${CRAMNAME}
 
-if [ -s "${CRAMNAME}" ]
-then
-  echo "CRAM File exists cleaning up"
-  rm ${BQNAME}
-  IDXNAMES=`echo ${BQNAME} | awk '{n=split($0,arra,"_"); print arra[1]"*.bai"}'`
-  rm ${IDXNAMES}
-fi
+##if [ -s "${CRAMNAME}" ]
+##then
+##  echo "CRAM File exists cleaning up"
+##  ##rm ${BQNAME}
+##  IDXNAMES=`echo ${BQNAME} | awk '{n=split($0,arra,"_"); print arra[1]"*.bai"}'`
+##  rm ${IDXNAMES}
+##fi

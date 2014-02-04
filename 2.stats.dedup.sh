@@ -33,7 +33,7 @@ TMPDIRNAME="/tmp/sambamba-$(date -d 'today' +'%Y%m%d%H%M')-${SLURM_ARRAY_TASK_ID
 ##awk '{split($0,arra,"."); gsub("sorted","dedup",arra[1]); print(arra[1])}'`
 
 echo "INDEXING SORTED BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
-$HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
+##$HTSCMD bamidx ${BAMS[$SLURM_ARRAY_TASK_ID]}
 
 mkdir ${TMPDIRNAME}
 
