@@ -18,6 +18,9 @@ INDELS=/home/aeonsim/refs/GATK-LIC-UG-indels.vcf.gz
 DBSNP=/home/aeonsim/refs/BosTau6_dbSNP138_NCBI.vcf.gz
 KNOWNSNP=/home/aeonsim/refs/GATK-497-UG.vcf.gz
 SAMBAM=/home/aeonsim/scripts/apps-damona-Oct13/sambamba_v0.4.0
+CHIPTARGETS=/home/aeonsim/refs/11k_targets.intervals
+PED=/home/aeonsim/refs/Damona-full.ped
+DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
@@ -44,6 +47,12 @@ echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 $SAMBAM markdup --tmpdir=${TMPDIRNAME} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${DENAME} 
 
 $HTSCMD bamidx ${DENAME}
+
+# Running GATK UG for Lane Validation
+
+$JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${DENAME} -o ${DENAME}.vcf.gz -D ${DBSNP} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
+
+$HTSCMD gtcheck -p ${DENAME}.gtcheck -g ${DAMONA11K} ${DENAME}.vcf.gz
 
 ## Cleaning RAW Sorted BAM
 
