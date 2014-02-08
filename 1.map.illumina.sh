@@ -53,14 +53,14 @@ $BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_TASK_I
 cd ${OUTPUT}sorted-bams/
 echo "$SAMTOOLS sort -@ 8 -m 1800M /scratch/aeonsim/${NAME}_${FLOW}.bam ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted"
 
-$SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
+$SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
 
-echo "$SAMTOOLS index ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam"
+echo "$SAMTOOLS index ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam"
 
-$SAMTOOLS index ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
+$SAMTOOLS index ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
 ## check to see the sorted file is non-zero then remove unsorted
 
-if [ -s "${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam" ]
+if [ -s "${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam" ]
 then
   echo "Sorted File exists cleaning up"
   rm ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam

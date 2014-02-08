@@ -40,16 +40,15 @@ mkdir ${TMPDIRNAME}
 
 ## Skipped PCR Free Libraries
 echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
-##$JAVA -Xmx22g -jar ${PICARD}MarkDuplicates.jar M=${BAMS[$SLURM_ARRAY_TASK_ID]}.metrics I=${BAMS[$SLURM_ARRAY_TASK_ID]} O=${DENAME} CREATE_INDEX=true
 
 ##sambamba multithreaded sam/bam util implements Picard Markduplicates algo but noticeably faster, identical output
-$SAMBAM markdup --tmpdir=${TMPDIRNAME} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${OUTPUT}dedup-bams/${DENAME} 
+$SAMBAM markdup --tmpdir=${TMPDIRNAME} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${OUTPUT}02-dedup-bams/${DENAME} 
 
-$HTSCMD bamidx ${OUTPUT}dedup-bams/${DENAME}
+$HTSCMD bamidx ${OUTPUT}02-dedup-bams/${DENAME}
 
 # Running GATK UG for Lane Validation
 
-$JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${OUTPUT}dedup-bams/${DENAME} -o ${OUTPUT}${DENAME}.vcf.gz -D ${DBSNP} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${OUTPUT}02-dedup-bams/${DENAME} -o ${OUTPUT}${DENAME}.vcf.gz -D ${DBSNP} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
 
 $BCFTOOLS tabix -p vcf ${OUTPUT}${DENAME}.vcf.gz
 
@@ -71,8 +70,8 @@ fi
 
 echo "Calculating Genome Coverage for: ${DENAME}"
 
-$BEDTOOLS genomecov -ibam  ${OUTPUT}dedup-bams/${DENAME} > ${DENAME}.cov &
+$BEDTOOLS genomecov -ibam  ${OUTPUT}02-dedup-bams/${DENAME} > ${DENAME}.cov &
 
 echo "Other Metrics: ${DENAME}"
 
-$JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT= ${OUTPUT}dedup-bams/${DENAME}
+$JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT= ${OUTPUT}02-dedup-bams/${DENAME}

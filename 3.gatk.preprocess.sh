@@ -44,13 +44,13 @@ IDENAME=`echo ${FILENAME} | awk '{gsub("dedup","indelRe",$1); print($1)}'`
 
 echo "Will create: ${IDENAME}"
 
-$JAVA -Xmx15g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -R ${REF} -o ${OUTPUT}indel-bams/${IDENAME}.intervals -nt $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx15g -jar ${GATK} -T RealignerTargetCreator -known ${INDELS} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -R ${REF} -o ${OUTPUT}03-indel-bams/${IDENAME}.intervals -nt $SLURM_JOB_CPUS_PER_NODE
 
-$JAVA -Xmx15g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -targetIntervals ${OUTPUT}indel-bams/${IDENAME}.intervals -o ${OUTPUT}indel-bams/${IDENAME} -known ${INDELS}
+$JAVA -Xmx15g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${BAMS[$SLURM_ARRAY_TASK_ID]} -targetIntervals ${OUTPUT}03-indel-bams/${IDENAME}.intervals -o ${OUTPUT}03-indel-bams/${IDENAME} -known ${INDELS}
 
 ## Clean Dedup BAM
 
-if [ -s "${OUTPUT}indel-bams/${IDENAME}" ]
+if [ -s "${OUTPUT}02-indel-bams/${IDENAME}" ]
 then
   echo "Indel Realignment File exists cleaning up"
   echo "done" > ${BAMS[$SLURM_ARRAY_TASK_ID]}
@@ -58,17 +58,17 @@ fi
 
 ## BQSR
 
-$JAVA -Xmx15g -jar ${GATK} -T BaseRecalibrator -I ${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${OUTPUT}bqsr-bams/${IDENAME}.table -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx15g -jar ${GATK} -T BaseRecalibrator -I ${OUTPUT}03-${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${OUTPUT}04-bqsr-bams/${IDENAME}.table -nct $SLURM_JOB_CPUS_PER_NODE
 
 BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'`
 
-$JAVA -Xmx15g -jar ${GATK} -T PrintReads -I ${OUTPUT}indel-bams/${IDENAME} -o ${OUTPUT}bqsr-bams/${BQNAME} -BQSR ${OUTPUT}bqsr-bams/${IDENAME}.table -R ${REF} -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx15g -jar ${GATK} -T PrintReads -I ${OUTPUT}03-indel-bams/${IDENAME} -o ${OUTPUT}04-bqsr-bams/${BQNAME} -BQSR ${OUTPUT}04-bqsr-bams/${IDENAME}.table -R ${REF} -nct $SLURM_JOB_CPUS_PER_NODE
 
 ## Clean Realigned BAM
 
-if [ -s "${OUTPUT}bqsr-bams/${BQNAME}" ]
+if [ -s "${OUTPUT}04-bqsr-bams/${BQNAME}" ]
 then
   echo "BQSR File exists cleaning up"
-  echo "done" > ${OUTPUT}indel-bams/${IDENAME}
+  echo "done" > ${OUTPUT}03-indel-bams/${IDENAME}
 fi
 
