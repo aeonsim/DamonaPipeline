@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=26 --mem-per-cpu=1500M 
+#SBATCH --nodes=1 --ntasks-per-node=13 --mem-per-cpu=3000M 
 #SBATCH --mail-type=FAIL --partition=uag
 ###SBATCH --array=0-7
 
@@ -50,17 +50,17 @@ echo "$BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_
 $BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_TASK_ID]} ${R2[$SLURM_ARRAY_TASK_ID]} | $SAMTOOLS view -bS - > ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam
 
 ##$SAMTOOLS
-
+cd ${OUTPUT}sorted-bams/
 echo "$SAMTOOLS sort -@ 8 -m 1800M /scratch/aeonsim/${NAME}_${FLOW}.bam ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted"
 
-$SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam
+$SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
 
-echo "$SAMTOOLS index ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam"
+echo "$SAMTOOLS index ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam"
 
-$SAMTOOLS index ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam
+$SAMTOOLS index ${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
 ## check to see the sorted file is non-zero then remove unsorted
 
-if [ -s "${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted.bam" ]
+if [ -s "${OUTPUT}sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam" ]
 then
   echo "Sorted File exists cleaning up"
   rm ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam

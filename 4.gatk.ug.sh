@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=10 --mem-per-cpu=3000M
+#SBATCH --nodes=1 --ntasks-per-node=3 --mem-per-cpu=4000M
 #SBATCH --mail-type=FAIL --partition=uag
 
 ## Can use Array command here OR outside directly currently using externally.
@@ -30,12 +30,12 @@ CHIPTARGETS=/home/aeonsim/refs/11k_targets.intervals
 PED=/home/aeonsim/refs/Damona-full.ped
 DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 
-find $1  -name '*.bam' > /tmp/${VERSION}.bams.list
+find $1  -name '*.bam' > /tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list
 
 echo " ARRAY ${SLURM_JOB_ID} or ${SLURM_JOBID}"
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
-$JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -I /tmp/${VERSION}.bams.list -o ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.gatkUG.vcf.gz -D ${DBSNP} -L ${TARGET[$SLURM_ARRAY_TASK_ID]} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx10g -jar $GATK -R ${REF} -T UnifiedGenotyper -I /tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list -o ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.gatkUG.vcf.gz -D ${DBSNP} -L ${TARGET[$SLURM_ARRAY_TASK_ID]} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
 
 #$FREEBAYES --bam-list /tmp/${VERSION}.bams.txt  -f ${REF} -r ${TARGET[$SLURM_ARRAY_TASK_ID]} | $BGZIP -c > /scratch/aeonsim/vcfs/${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.vcf.gz
 
