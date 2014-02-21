@@ -52,9 +52,6 @@ $JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${OU
 
 $BCFTOOLS tabix -p vcf ${OUTPUT}${DENAME}.vcf.gz
 
-$BCFTOOLS gtcheck -p ${NAME}.gtcheck -s ${NAME} -S ${NAME} -g ${DAMONA11K} ${OUTPUT}${DENAME}.vcf.gz
-
-grep ${NAME} ${NAME}.gtcheck.tab
 
 ## Cleaning RAW Sorted BAM
 
@@ -75,3 +72,7 @@ $BEDTOOLS genomecov -ibam  ${OUTPUT}02-dedup-bams/${DENAME} > ${DENAME}.cov &
 echo "Other Metrics: ${DENAME}"
 
 $JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT= ${OUTPUT}02-dedup-bams/${DENAME}
+
+$BCFTOOLS gtcheck -p ${NAME}.gtcheck -s ${NAME} -S ${NAME} -g ${DAMONA11K} ${OUTPUT}${DENAME}.vcf.gz
+
+grep ${NAME} ${NAME}.gtcheck.tab

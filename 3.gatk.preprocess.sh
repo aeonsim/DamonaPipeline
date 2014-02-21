@@ -50,7 +50,7 @@ $JAVA -Xmx15g -jar ${GATK} -T IndelRealigner -R ${REF} -I ${BAMS[$SLURM_ARRAY_TA
 
 ## Clean Dedup BAM
 
-if [ -s "${OUTPUT}02-indel-bams/${IDENAME}" ]
+if [ -s "${OUTPUT}03-indel-bams/${IDENAME}" ]
 then
   echo "Indel Realignment File exists cleaning up"
   echo "done" > ${BAMS[$SLURM_ARRAY_TASK_ID]}
@@ -58,11 +58,11 @@ fi
 
 ## BQSR
 
-$JAVA -Xmx15g -jar ${GATK} -T BaseRecalibrator -I ${OUTPUT}03-${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${OUTPUT}04-bqsr-bams/${IDENAME}.table -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx15g -jar ${GATK} -T BaseRecalibrator -I ${OUTPUT}03-indel-bams/${IDENAME} -R ${REF} -knownSites ${DBSNP} -knownSites ${KNOWNSNP} -o ${OUTPUT}04-bqsr-bams/${IDENAME}.table -nct $SLURM_JOB_CPUS_PER_NODE
 
 BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'`
 
-$JAVA -Xmx15g -jar ${GATK} -T PrintReads -I ${OUTPUT}03-indel-bams/${IDENAME} -o ${OUTPUT}04-bqsr-bams/${BQNAME} -BQSR ${OUTPUT}04-bqsr-bams/${IDENAME}.table -R ${REF} -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx15g -jar ${GATK} -T PrintReads -I ${OUTPUT}03-indel-bams/${IDENAME} -o ${OUTPUT}04-bqsr-bams/${BQNAME} -BQSR ${OUTPUT}04-bqsr-bams/${IDENAME}.table -R ${REF} --bam_compression 9 -nct $SLURM_JOB_CPUS_PER_NODE
 
 ## Clean Realigned BAM
 

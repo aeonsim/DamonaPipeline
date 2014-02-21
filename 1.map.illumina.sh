@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=13 --mem-per-cpu=3000M 
+#SBATCH --nodes=1 --ntasks-per-node=13 --mem-per-cpu=1400M 
 #SBATCH --mail-type=FAIL --partition=uag
 ###SBATCH --array=0-7
 
@@ -50,7 +50,6 @@ echo "$BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_
 $BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_TASK_ID]} ${R2[$SLURM_ARRAY_TASK_ID]} | $SAMTOOLS view -bS - > ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam
 
 ##$SAMTOOLS
-cd ${OUTPUT}sorted-bams/
 echo "$SAMTOOLS sort -@ 8 -m 1800M /scratch/aeonsim/${NAME}_${FLOW}.bam ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted"
 
 $SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
