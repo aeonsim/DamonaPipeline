@@ -1,5 +1,6 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=13 --mem-per-cpu=1400M 
+##SBATCH --nodes=1 --ntasks-per-node=13 --mem-per-cpu=1400M 
+#SBATCH --ntasks=1 --cpus-per-task=13 --mem-per-cpu=2200M --requeue
 #SBATCH --mail-type=FAIL --partition=uag
 ###SBATCH --array=0-7
 

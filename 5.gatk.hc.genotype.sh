@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=16 --mem-per-cpu=6300M
-#SBATCH --mail-type=FAIL --partition=uag
+#SBATCH --nodes=1 --ntasks-per-node=6 --mem-per-cpu=3000M
+#SBATCH --mail-type=FAIL --partition=chad --requeue
 
 ## Can use Array command here OR outside directly currently using externally.
 ##SBATCH --array=0-1
@@ -9,14 +9,18 @@
 ##SBATCH --dependency=afterok:JOBID
 set -e
 
-[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> 4.platypus.sh /path/to/bams/"; exit 1; }
+[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> genotype.sh /path/to/gVCFs/"; exit 1; }
 
+##rm -rf /tmp/
+
+##exit
 
 SAMTOOLS=/home/aeonsim/scripts/apps-damona-Oct13/samtools/samtools
 REF=/home/aeonsim/refs/bosTau6.fasta
 HTSCMD=/home/aeonsim/scripts/apps-damona-Oct13/htslib/htscmd
 JAVA=/home/aeonsim/tools/jre1.7.0_25/bin/java
 GATK=/home/aeonsim/scripts/apps-damona-Oct13/GenomeAnalysisTK-2.7-4-g6f46d11/GenomeAnalysisTK.jar
+GATK3=/home/aeonsim/tools/GenomeAnalysisTK.jar
 FREEBAYES=/home/aeonsim/scripts/apps-damona-Oct13/freebayes/bin/freebayes
 INDELS=/home/aeonsim/refs/GATK-LIC-UG-indels.vcf.gz
 DBSNP=/home/aeonsim/refs/BosTau6_dbSNP138_NCBI.vcf.gz
@@ -31,19 +35,15 @@ PED=/home/aeonsim/refs/Damona-full.ped
 DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 PLATYPUS=/scratch/aeonsim/tools/Platypus_0.5.2/Platypus.py
 
-find $1  -name '*.bam' > /scratch/aeonsim/tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list
+#gVCFS=(`ls $1/*gvcf.vcf.gz`)
+ls $1/*gvcf.vcf.gz > ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list
 
-echo " ARRAY ${SLURM_JOB_ID} or ${SLURM_JOBID}"
-echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
+#echo ${gVCFS}
 
-python ${PLATYPUS} callVariants --bamFiles=/scratch/aeonsim/tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list --regions=${TARGET[$SLURM_ARRAY_TASK_ID]} --output=${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf --refFile=${REF} --assemble=1 --maxReads=15000000 --nCPU=$SLURM_JOB_CPUS_PER_NODE
+#NAME=`echo ${gVCFS[$SLURM_ARRAY_TASK_ID]} | awk '{n=split($0,arra,"/"); split(arra[n],brra,"_"); print brra[1]}' | sed -r 's/gvcf/genotypes/'`
+NAME=${TARGET[$SLURM_ARRAY_TASK_ID]}.${VERSION}.genotypes.vcf.gz
+#echo $NAME
 
-bgzip ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf
-tabix -p vcf ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf.gz
+#$JAVA -Xmx12g -jar $GATK3 -T GenotypeGVCFs -D ${DBSNP} -V ${gVCFS[$SLURM_ARRAY_TASK_ID]} -o output/${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE
 
-rm /scratch/aeonsim/tmp/${VERSION}.bams.list
-#if [ -s "/scratch/aeonsim/vcfs/${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.vcf.gz" ]
-#then
-#  echo "VCF exists cleaning up"
-#  rm /scratch/aeonsim/vcfs/${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.bam
-#fi
+$JAVA -Xmx16g -jar $GATK3 -T GenotypeGVCFs -D ${DBSNP} -V ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list -o ${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE -L ${TARGET[$SLURM_ARRAY_TASK_ID]}

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=10 --mem-per-cpu=1800M 
+#SBATCH --nodes=1 --ntasks-per-node=10 --mem-per-cpu=1800M --requeue
 #SBATCH --mail-type=FAIL --partition=uag
 
 ## Can use Array command here OR outside directly currently using externally.

@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=6G 
+#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=6G  --requeue
 #SBATCH --mail-type=FAIL --partition=uagfio
 ##SBATCH --array=0-1
 set -e
@@ -34,7 +34,7 @@ NAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{n=split($0,arra,"/"); split(arr
 FILENAME=`echo ${BAMS[$SLURM_ARRAY_TASK_ID]} | awk '{n=split($0,arra,"/"); print arra[n]}'`
 DENAME=`echo ${FILENAME} | awk '{gsub("sorted","dedup",$1); print($1)}'`
 ##Create Unique TMP dir for sambamba
-TMPDIRNAME="/tmp/sambamba-$(date -d 'today' +'%Y%m%d%H%M')-${SLURM_ARRAY_TASK_ID}"
+TMPDIRNAME="/scratch/aeonsim/tmp/sambamba-$(date -d 'today' +'%Y%m%d%H%M')-${SLURM_ARRAY_TASK_ID}"
 
 mkdir ${TMPDIRNAME}
 
