@@ -53,7 +53,7 @@ $BWA mem -t $SLURM_JOB_CPUS_PER_NODE -M -R ${RG} ${REF} ${R1[$SLURM_ARRAY_TASK_I
 ##$SAMTOOLS
 echo "$SAMTOOLS sort -@ 8 -m 1800M /scratch/aeonsim/${NAME}_${FLOW}.bam ${OUTPUT}${NAME}_${FLOW}_${LANE}_sorted"
 
-$SAMTOOLS sort -@ 8 -m 2G -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
+$SAMTOOLS sort -@ 8 -m 1800M -f ${OUTPUT}${NAME}_${FLOW}_${LANE}.bam  ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam
 
 echo "$SAMTOOLS index ${OUTPUT}01-sorted-bams/${NAME}_${FLOW}_${LANE}_sorted.bam"
 

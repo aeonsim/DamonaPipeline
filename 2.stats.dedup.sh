@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=6G  --requeue
+#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=1875M  --requeue
 #SBATCH --mail-type=FAIL --partition=uagfio
 ##SBATCH --array=0-1
 set -e
@@ -23,6 +23,7 @@ PED=/home/aeonsim/refs/Damona-full.ped
 DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 BCFTOOLS=/scratch/aeonsim/tools/bcftools/bcftools
 OUTPUT=/scratch/aeonsim/bams/
+IGVTOOLS=/home/aeonsim/tools/IGVTools/igvtools
 
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
@@ -41,14 +42,20 @@ mkdir ${TMPDIRNAME}
 ## Skipped PCR Free Libraries
 echo "PCR DEDUP BAM: ${BAMS[$SLURM_ARRAY_TASK_ID]}"
 
+## Allow more files open at once for SAMBAM
+ulimit -n 2048
+
 ##sambamba multithreaded sam/bam util implements Picard Markduplicates algo but noticeably faster, identical output
 $SAMBAM markdup --tmpdir=${TMPDIRNAME} -t $SLURM_JOB_CPUS_PER_NODE ${BAMS[$SLURM_ARRAY_TASK_ID]} ${OUTPUT}02-dedup-bams/${DENAME} 
 
 $HTSCMD bamidx ${OUTPUT}02-dedup-bams/${DENAME}
 
+#Move IGVtools to the Merge script when written
+#$IGVTOOLS count -z 5 -w 25 ${OUTPUT}02-dedup-bams/${DENAME} ${DENAME}.tdf  bosTau6 &
+
 # Running GATK UG for Lane Validation
 
-$JAVA -Xmx20g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${OUTPUT}02-dedup-bams/${DENAME} -o ${OUTPUT}${DENAME}.vcf.gz -D ${DBSNP} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
+$JAVA -Xmx4g -jar $GATK -R ${REF} -T UnifiedGenotyper -L ${CHIPTARGETS} -I ${OUTPUT}02-dedup-bams/${DENAME} -o ${OUTPUT}${DENAME}.vcf.gz -D ${DBSNP} -ped ${PED} --pedigreeValidationType SILENT -nct $SLURM_JOB_CPUS_PER_NODE
 
 $BCFTOOLS tabix -p vcf ${OUTPUT}${DENAME}.vcf.gz
 
@@ -68,11 +75,11 @@ fi
 echo "Calculating Genome Coverage for: ${DENAME}"
 
 $BEDTOOLS genomecov -ibam  ${OUTPUT}02-dedup-bams/${DENAME} > ${DENAME}.cov &
+$BCFTOOLS gtcheck -p ${NAME}.gtcheck -s ${NAME} -S ${NAME} -g ${DAMONA11K} ${OUTPUT}${DENAME}.vcf.gz &
 
 echo "Other Metrics: ${DENAME}"
 
-$JAVA -Xmx22g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT= ${OUTPUT}02-dedup-bams/${DENAME}
+$JAVA -Xmx4g -jar ${PICARD}CollectMultipleMetrics.jar REFERENCE_SEQUENCE=${REF} OUTPUT=${DENAME} INPUT=${OUTPUT}02-dedup-bams/${DENAME}
 
-$BCFTOOLS gtcheck -p ${NAME}.gtcheck -s ${NAME} -S ${NAME} -g ${DAMONA11K} ${OUTPUT}${DENAME}.vcf.gz
 
 grep ${NAME} ${NAME}.gtcheck.tab

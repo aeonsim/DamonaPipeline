@@ -64,6 +64,9 @@ BQNAME=`echo ${IDENAME} | awk '{gsub("indelRe","BQSR",$1); print($1)}'`
 
 $JAVA -Xmx15g -jar ${GATK} -T PrintReads -I ${OUTPUT}03-indel-bams/${IDENAME} -o ${OUTPUT}04-bqsr-bams/${BQNAME} -BQSR ${OUTPUT}04-bqsr-bams/${IDENAME}.table -R ${REF} --bam_compression 9 -nct $SLURM_JOB_CPUS_PER_NODE
 
+cd ${OUTPUT}03-indel-bams/
+rename 's/BQSR\.bai/BQSR\.bam\.bai/' *.bai
+
 ## Clean Realigned BAM
 
 if [ -s "${OUTPUT}04-bqsr-bams/${BQNAME}" ]
