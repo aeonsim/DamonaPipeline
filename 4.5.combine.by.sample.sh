@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=1 --mem-per-cpu=10000M
+#SBATCH --nodes=1 --ntasks-per-node=1 --mem-per-cpu=3500M
 #SBATCH --mail-type=FAIL --partition=uag
 
 ## Can use Array command here OR outside directly currently using externally.
@@ -32,8 +32,8 @@ PED=/home/aeonsim/refs/Damona-full.ped
 DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 PLATYPUS=/scratch/aeonsim/tools/Platypus_0.5.2/Platypus.py
 
-NAMES=(`ls ${1} | cut -f 1 -d "-" | uniq`)
+NAMES=(`ls ${1}*gz | awk '{n=split($0,arra,"/"); print arra[n]}' | cut -f 1 -d "-" | uniq`)
 
-ls $1*${NAMES[$SLURM_ARRAY_TASK_ID]}-*gz > ${NAMES[$SLURM_ARRAY_TASK_ID]}.list
+ls ${1}*${NAMES[$SLURM_ARRAY_TASK_ID]}-*gz > ${NAMES[$SLURM_ARRAY_TASK_ID]}.list
 
-$JAVA -Xmx8g -jar $GATK3 -T CombineGVCFs -R $REF -V ${NAMES[$SLURM_ARRAY_TASK_ID]}.list -o ${NAMES[$SLURM_ARRAY_TASK_ID]}.gvcf.vcf.gz
+$JAVA -Xmx2800m -jar $GATK3 -T CombineGVCFs -R $REF -V ${NAMES[$SLURM_ARRAY_TASK_ID]}.list -o ${NAMES[$SLURM_ARRAY_TASK_ID]}.gvcf.vcf.gz

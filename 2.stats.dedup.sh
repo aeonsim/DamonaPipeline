@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=4 --mem-per-cpu=1875M  --requeue
+#SBATCH --nodes=1 --ntasks-per-node=8 --mem-per-cpu=1800M  --requeue
 #SBATCH --mail-type=FAIL --partition=uagfio
 ##SBATCH --array=0-1
 set -e
