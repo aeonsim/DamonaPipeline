@@ -34,13 +34,13 @@ PLATYPUS=/scratch/aeonsim/tools/Platypus_0.5.2/Platypus.py
 SAMJAR=/home/aeonsim/tools/picard-tools-1.104/sam-1.104.jar
 WD=`pwd`
 
-mkdir denovos-${VERSION}
-cd denovos-${VERSION}
+#mkdir denovos-${VERSION}
+#cd denovos-${VERSION}
 #cd /scratch/aeonsim/vcfs/code-git/ ; git pull ; cd ${WD}/denovos-${VERSION}
-mkdir advFilter
-cd advFilter
-cp /scratch/aeonsim/vcfs/code-git/scala-apps/advancedFilter.scala .
-/home/aeonsim/tools/GenRefactored99sZ/build/pack/bin/scalac -cp ${SAMJAR} advancedFilter.scala
-cd ..
+#mkdir advFilter
+#cd advFilter
+#cp /scratch/aeonsim/vcfs/code-git/scala-apps/advancedFilter.scala .
+#/home/aeonsim/tools/GenRefactored99sZ/build/pack/bin/scalac -cp ${SAMJAR} advancedFilter.scala
+#cd ..
 
-JAVA_OPTS=-Xmx15g /home/aeonsim/tools/GenRefactored99sZ/build/pack/bin/scala -cp ${SAMJAR}:advFilter/ advFilter VCF=${1}  ped=/scratch/aeonsim/vcfs/pedigrees/Damona-full.ped trios=/scratch/aeonsim/vcfs/pedigrees/Damona-Trios.txt minDP=10 minALT=2 RECUR=t minKIDS=1 QUAL=100 type=${2} out=test > Denovos-${VERSION}.${2}.output.txt
+java -Xmx15g -jar /scratch/aeonsim/vcfs/pedigreeFilter.jar VCF=${1}  ped=/scratch/aeonsim/vcfs/pedigrees/Damona-full.ped trios=/scratch/aeonsim/vcfs/pedigrees/Damona-Trios.txt ref=${REF} minDP=10 minALT=2 RECUR=t minKIDS=5 QUAL=100 minrafq=0.0 type=${2} out=${VERSION}.run > Denovos-${VERSION}.${2}.output.txt
