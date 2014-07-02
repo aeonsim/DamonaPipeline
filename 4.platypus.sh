@@ -36,7 +36,7 @@ find $1  -name '*.bam' > /scratch/aeonsim/tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.
 echo " ARRAY ${SLURM_JOB_ID} or ${SLURM_JOBID}"
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
-python ${PLATYPUS} callVariants --bamFiles=/scratch/aeonsim/tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list --regions=${TARGET[$SLURM_ARRAY_TASK_ID]} --output=${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf --refFile=${REF} --assemble=1 --maxReads=15000000 --nCPU=$SLURM_JOB_CPUS_PER_NODE
+python ${PLATYPUS} callVariants --bamFiles=/scratch/aeonsim/tmp/${VERSION}.${SLURM_ARRAY_TASK_ID}.bams.list --regions=${TARGET[$SLURM_ARRAY_TASK_ID]} --output=${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf --refFile=${REF} --assemble=1 --bufferSize=60000 --maxReads=5000000 --nCPU=$SLURM_JOB_CPUS_PER_NODE
 
 bgzip ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf
 tabix -p vcf ${TARGET[$SLURM_ARRAY_TASK_ID]}-$VERSION.platypus.vcf.gz
