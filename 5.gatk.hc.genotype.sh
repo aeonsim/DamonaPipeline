@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=10 --mem-per-cpu=8500M
+#SBATCH --nodes=1 --ntasks-per-node=2 --mem-per-cpu=13000M
 #SBATCH --mail-type=FAIL --partition=chad --requeue
 
 ## Can use Array command here OR outside directly currently using externally.
@@ -21,9 +21,10 @@ HTSCMD=/home/aeonsim/scripts/apps-damona-Oct13/htslib/htscmd
 JAVA=/home/aeonsim/tools/jre1.7.0_25/bin/java
 GATK=/home/aeonsim/scripts/apps-damona-Oct13/GenomeAnalysisTK-2.7-4-g6f46d11/GenomeAnalysisTK.jar
 GATK3=/home/aeonsim/tools/GenomeAnalysisTK.jar
+GATK32=/home/aeonsim/tools/GATK3.2/GenomeAnalysisTK.jar
 FREEBAYES=/home/aeonsim/scripts/apps-damona-Oct13/freebayes/bin/freebayes
 INDELS=/home/aeonsim/refs/GATK-LIC-UG-indels.vcf.gz
-DBSNP=/home/aeonsim/refs/BosTau6_dbSNP138_NCBI.vcf.gz
+DBSNP=/home/aeonsim/refs/BosTau6_dbSNP140_NCBI.vcf.gz
 KNOWNSNP=/home/aeonsim/refs/GATK-497-UG.vcf.gz
 CRAM=/home/aeonsim/scripts/apps-damona-Oct13/cramtools-2.0.jar
 BGZIP=/home/aeonsim/tools/tabix-0.2.6/bgzip
@@ -43,4 +44,4 @@ ls $1/*gvcf.vcf.gz | grep -v -f ${2} > ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list
 #NAME=`echo ${gVCFS[$SLURM_ARRAY_TASK_ID]} | awk '{n=split($0,arra,"/"); split(arra[n],brra,"_"); print brra[1]}' | sed -r 's/gvcf/genotypes/'`
 NAME=${TARGET[$SLURM_ARRAY_TASK_ID]}.${VERSION}.genotypes.vcf.gz
 
-$JAVA -Xmx80g -jar $GATK3 -T GenotypeGVCFs -D ${DBSNP} -V ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list -o ${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE -L ${TARGET[$SLURM_ARRAY_TASK_ID]}
+$JAVA -Xmx24g -jar $GATK32 -T GenotypeGVCFs -D ${DBSNP} -V ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list -o ${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE -L ${TARGET[$SLURM_ARRAY_TASK_ID]}

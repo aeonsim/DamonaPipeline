@@ -24,8 +24,8 @@ echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 FLOW=`echo $1 | awk '{n=split($0,arra,"/"); print arra[n-1]}'`
 echo "FLOWCELL IS: ${FLOW}"
 
-R1=(`ls $1*R1*`)
-R2=(`ls $1*R2*`)
+R1=(`ls $1*_R1_*`)
+R2=(`ls $1*_R2_*`)
 
 echo ${R1[@]}
 
