@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=2 --mem-per-cpu=15000M
+#SBATCH --nodes=1 --ntasks-per-node=5 --mem-per-cpu=10000M
 #SBATCH --mail-type=FAIL --partition=chad --requeue
 
 ## Can use Array command here OR outside directly currently using externally.
@@ -9,7 +9,7 @@
 ##SBATCH --dependency=afterok:JOBID
 set -e
 
-[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> genotype.sh /path/to/gVCFs/ /pathto/filestoIgnore.list"; exit 1; }
+[[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> genotype.sh script.scala gvcfs.file"; exit 1; }
 
 ##rm -rf /tmp/
 
@@ -36,12 +36,20 @@ PED=/home/aeonsim/refs/Damona-full.ped
 DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 PLATYPUS=/scratch/aeonsim/tools/Platypus_0.5.2/Platypus.py
 
+mkdir ${TARGET[$SLURM_ARRAY_TASK_ID]}
+cd ${TARGET[$SLURM_ARRAY_TASK_ID]}
+echo ${TARGET[$SLURM_ARRAY_TASK_ID]} > ${TARGET[$SLURM_ARRAY_TASK_ID]}.intervals
+
+$JAVA -Xmx6g -jar ~/Queue.jar -S ${1} -L ${TARGET[$SLURM_ARRAY_TASK_ID]}.intervals -o ${TARGET[$SLURM_ARRAY_TASK_ID]}.queue.vcf.gz -R ${REF} -V ${2} -D ${DBSNP} -run
+
+
 #gVCFS=(`ls $1/*gvcf.vcf.gz`)
-ls $1/*gvcf.vcf.gz | grep -v -f ${2} > ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list
+#ls $1/*gvcf.vcf.gz | grep -v -f ${2} > ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list
+#INTERVALS=(`cat ${2}`)
 
 #echo ${gVCFS}
 
 #NAME=`echo ${gVCFS[$SLURM_ARRAY_TASK_ID]} | awk '{n=split($0,arra,"/"); split(arra[n],brra,"_"); print brra[1]}' | sed -r 's/gvcf/genotypes/'`
-NAME=${TARGET[$SLURM_ARRAY_TASK_ID]}.${VERSION}.genotypes.vcf.gz
+#NAME=${TARGET[$SLURM_ARRAY_TASK_ID]}.${VERSION}.genotypes.vcf.gz
 
-$JAVA -Xmx28g -jar $GATK32 -T GenotypeGVCFs -D ${DBSNP} -V ${TARGET[$SLURM_ARRAY_TASK_ID]}.gvcf.list -o ${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE -L ${TARGET[$SLURM_ARRAY_TASK_ID]}
+#$JAVA -Xmx37g -XX:+UseParallelOldGC  -XX:ParallelGCThreads=4  -XX:GCTimeLimit=50  -XX:GCHeapFreeLimit=10 -jar $GATK32 -T GenotypeGVCFs -D ${DBSNP} -V ${1} -o ${NAME} -R ${REF} -nt $SLURM_JOB_CPUS_PER_NODE -L ${TARGET[$SLURM_ARRAY_TASK_ID]}

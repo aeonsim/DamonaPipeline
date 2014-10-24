@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=1 --ntasks-per-node=17 --mem-per-cpu=2000M
+#SBATCH --nodes=1 --ntasks-per-node=17 --mem-per-cpu=6000M --exclude=kosmos
 #SBATCH --mail-type=FAIL --partition=uag
 
 ## Can use Array command here OR outside directly currently using externally.
@@ -11,6 +11,7 @@ set -e
 
 [[ $# -gt 0 ]] || { echo "sbatch --array=0-<NumBams> 4.freeb.para.sh bams.list targets.list"; exit 1; }
 
+ulimit -n 4096
 
 SAMTOOLS=/home/aeonsim/scripts/apps-damona-Oct13/samtools/samtools
 REF=/home/aeonsim/refs/bosTau6.fasta
@@ -35,8 +36,8 @@ DAMONA11K=/home/aeonsim/refs/Damona-11K.vcf.gz
 echo " ARRAY ${SLURM_JOB_ID} or ${SLURM_JOBID}"
 echo "ARRAY JOB: ${SLURM_ARRAY_TASK_ID}"
 
-export PATH=$PATH:/gluster/aeonsim/freeb-test/freebayes/bin/:/gluster/aeonsim/freeb-test/freebayes/vcflib/bin/ 
+export PATH=$PATH:/scratch/aeonsim/vcfs/october-2014/freebayes/bin/:/scratch/aeonsim/vcfs/october-2014/freebayes/vcflib/bin/ 
 
 grep "${TARGET[$SLURM_ARRAY_TASK_ID]}:" $2 > ${TARGET[$SLURM_ARRAY_TASK_ID]}.$VERSION.list
 
-/gluster/aeonsim/freeb-test/freebayes/scripts/freebayes-parallel ${TARGET[$SLURM_ARRAY_TASK_ID]}.$VERSION.list $SLURM_JOB_CPUS_PER_NODE -f $REF -L $1 | bgzip -c > ${TARGET[$SLURM_ARRAY_TASK_ID]}.freebayes.$VERSION.vcf.gz
+/scratch/aeonsim/vcfs/october-2014/freebayes/scripts/freebayes-parallel ${TARGET[$SLURM_ARRAY_TASK_ID]}.$VERSION.list $SLURM_JOB_CPUS_PER_NODE -f $REF -L $1 | vcfglxgt  | $BGZIP -c > ${TARGET[$SLURM_ARRAY_TASK_ID]}.freebayes.$VERSION.vcf.gz
